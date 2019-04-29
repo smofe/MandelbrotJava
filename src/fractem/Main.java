@@ -1,6 +1,7 @@
 package fractem;
 
 import javafx.application.Application;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -8,6 +9,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
@@ -25,7 +27,14 @@ import javafx.scene.text.Text;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Main extends Application {
 
@@ -80,11 +89,19 @@ public class Main extends Application {
             @Override
             public void handle(MouseEvent mouseEvent) {
                 mandleBrot = new MandleBrot(-2.5,-1.0,3.5,2.0,Integer.parseInt(textField_iterations.getCharacters().toString()));
-                mandleBrot.setColor(colorPicker.getValue());
                 double[] sf = {Double.parseDouble(textField_sf_hue.getCharacters().toString()),Double.parseDouble(textField_sf_sat.getCharacters().toString()),Double.parseDouble(textField_sf_bri.getCharacters().toString())};
                 mandleBrot.setSmoothfactor(sf);
+                mandleBrot.setColor(colorPicker.getValue());
                 mandleBrot.setMultithreading(enableMultithreading.isSelected());
                 mandleBrot.draw(canvas.getGraphicsContext2D(),width,height);
+                button_apply.onMouseClickedProperty();
+            }
+        });
+        Button button_screenshot = new Button("Screenshot");
+        button_screenshot.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                takeScreenshot();
             }
         });
 
@@ -107,14 +124,13 @@ public class Main extends Application {
         settingsPane.add(text_sf_bri,0,4);
         settingsPane.add(textField_sf_bri,1,4);
         settingsPane.add(enableMultithreading,0,5);
-        settingsPane.add(button_apply,0,6);
-        settingsPane.add(button_reset,1,6);
+        settingsPane.add(button_screenshot,0,6);
+        settingsPane.add(button_apply,0,7);
+        settingsPane.add(button_reset,1,7);
 
         //Sytling Setting-Panel
         settingsPane.setStyle("-fx-background-color: BEIGE");
 
-
-        //testcommentlol
         final Popup popup = new Popup();
         popup.setX(300);
         popup.setY(200);
@@ -126,6 +142,7 @@ public class Main extends Application {
             public void handle(KeyEvent event) {
                 switch (event.getCode()){
                     case ESCAPE: popup.show(stage);
+                    case S: takeScreenshot();
                 }
             }
         });
@@ -149,4 +166,18 @@ public class Main extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+
+    private void takeScreenshot(){
+        try {
+            Date date = new Date();
+            SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
+            File file = new File("." + File.separator + "screenshots" + File.separator + formatter.format(date) + ".png");
+            RenderedImage renderedImage = SwingFXUtils.fromFXImage(canvas.snapshot(new SnapshotParameters(),new WritableImage(width,height)),null);
+            ImageIO.write(renderedImage,"png",file);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("screenshot failed");
+        }
+    }
+
 }
