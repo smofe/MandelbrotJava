@@ -21,12 +21,12 @@ public class MandleBrot {
 
     private Color color;
 
-    private boolean multithreading = false;
+    private boolean multithreading = true;
 
     public MandleBrot(double r, double i, double width, double height){
         this.top_left = new ComplexNumber(r,i);
         this.bottom_right = new ComplexNumber(r+width,i+height);
-        color = Color.RED;
+        color = Color.BLUE;
     }
 
     public MandleBrot(double r, double i, double width, double height,int max_iterations){
@@ -36,7 +36,7 @@ public class MandleBrot {
 
     public void draw(GraphicsContext gc,int width, int height){
         if (multithreading) {
-            Thread[][] threads = new Thread[16][16];
+            Thread[][] threads = new Thread[8][8];
             Runnable[][] runnables = new Runnable[threads.length][threads[0].length];
             double frac_width = (bottom_right.getReal()-top_left.getReal());
             double frac_height = (bottom_right.getImaginary()-top_left.getImaginary());

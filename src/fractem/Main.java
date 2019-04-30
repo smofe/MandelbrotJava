@@ -52,8 +52,8 @@ public class Main extends Application {
 
     public void initUI(Stage stage){
         StackPane root = new StackPane();
-        width=1280;
-        height=720;
+        width=1920;
+        height=1080;
         Scene scene = new Scene(root, width, height);
         canvas = new Canvas(width,height);
         root.getChildren().add(canvas);
@@ -62,7 +62,7 @@ public class Main extends Application {
         Text text_iterations = new Text("Number of Iterations: ");
         TextField textField_iterations = new TextField("1000");
         Text text_base_color = new Text("Base Color: ");
-        ColorPicker colorPicker = new ColorPicker();
+        ColorPicker colorPicker = new ColorPicker(Color.BLUE);
         Text text_sf_hue = new Text("Smooth Factor Hue: ");
         TextField textField_sf_hue = new TextField("200");
         Text text_sf_sat = new Text("Smooth Factor Saturation: ");
@@ -70,6 +70,7 @@ public class Main extends Application {
         Text text_sf_bri = new Text("Smooth Factor Brightness: ");
         TextField textField_sf_bri = new TextField("1");
         CheckBox enableMultithreading = new CheckBox("Enable Multithreading");
+        enableMultithreading.setSelected(true);
 
         Button button_apply = new Button("Apply");
         button_apply.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -129,7 +130,7 @@ public class Main extends Application {
         settingsPane.add(button_reset,1,7);
 
         //Sytling Setting-Panel
-        settingsPane.setStyle("-fx-background-color: BEIGE");
+        settingsPane.setStyle("-fx-background-color: GREY");
 
         final Popup popup = new Popup();
         popup.setX(300);
@@ -141,16 +142,17 @@ public class Main extends Application {
             @Override
             public void handle(KeyEvent event) {
                 switch (event.getCode()){
-                    case ESCAPE: popup.show(stage);
-                    case S: takeScreenshot();
+                    case ESCAPE: popup.show(stage); break;
+                    case S: takeScreenshot(); break;
                 }
             }
         });
         scene.setOnMousePressed(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                mandleBrot.zoom((int)event.getX(),(int)event.getY(),width,height,5);
-                mandleBrot.draw(canvas.getGraphicsContext2D(),width,height);
+               // mandleBrot.zoom((int)event.getX(),(int)event.getY(),width,height,5);
+                generateVideo((int)event.getX(),(int)event.getY(),20);
+               // mandleBrot.draw(canvas.getGraphicsContext2D(),width,height);
             }
         });
 
@@ -172,11 +174,20 @@ public class Main extends Application {
             Date date = new Date();
             SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
             File file = new File("." + File.separator + "screenshots" + File.separator + formatter.format(date) + ".png");
+            file.getParentFile().mkdirs();
             RenderedImage renderedImage = SwingFXUtils.fromFXImage(canvas.snapshot(new SnapshotParameters(),new WritableImage(width,height)),null);
             ImageIO.write(renderedImage,"png",file);
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("screenshot failed");
+        }
+    }
+
+    private void generateVideo(int x, int y,int img_count){
+        for (int i=0; i<img_count; i++){
+            takeScreenshot();
+            mandleBrot.zoom(x,y,width,height,2);
+            mandleBrot.draw(canvas.getGraphicsContext2D(),width,height);
         }
     }
 
