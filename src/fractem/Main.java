@@ -38,6 +38,9 @@ import java.util.Date;
 
 public class Main extends Application {
 
+    public static final int FILE_NAME_MODE_DATE = 0;
+
+
     private ComplexNumber c_x, c_y;
     private int width,height;
     private Canvas canvas;
@@ -102,7 +105,7 @@ public class Main extends Application {
         button_screenshot.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent mouseEvent) {
-                takeScreenshot();
+                takeScreenshot(FILE_NAME_MODE_DATE);
             }
         });
 
@@ -143,16 +146,17 @@ public class Main extends Application {
             public void handle(KeyEvent event) {
                 switch (event.getCode()){
                     case ESCAPE: popup.show(stage); break;
-                    case S: takeScreenshot(); break;
+                    case S: takeScreenshot(FILE_NAME_MODE_DATE); break;
                 }
             }
         });
         scene.setOnMousePressed(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-               // mandleBrot.zoom((int)event.getX(),(int)event.getY(),width,height,5);
-                generateVideo((int)event.getX(),(int)event.getY(),20);
-               // mandleBrot.draw(canvas.getGraphicsContext2D(),width,height);
+              // mandleBrot.zoom((int)event.getX(),(int)event.getY(),width,height,5);
+                generateVideo((int)event.getX(),(int)event.getY(),1500,50);
+              // mandleBrot.draw(canvas.getGraphicsContext2D(),width,height);
+              // System.out.println("r: " + (mandleBrot.getTop_left().getReal()+mandleBrot.getBottom_right().getReal())/2 + " i: " + (mandleBrot.getTop_left().getImaginary()+mandleBrot.getBottom_right().getImaginary())/2);
             }
         });
 
@@ -169,11 +173,16 @@ public class Main extends Application {
         launch(args);
     }
 
-    private void takeScreenshot(){
+    private void takeScreenshot(int filenamemode){
         try {
             Date date = new Date();
-            SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
-            File file = new File("." + File.separator + "screenshots" + File.separator + formatter.format(date) + ".png");
+            File file;
+            if (filenamemode == FILE_NAME_MODE_DATE) {
+                SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
+                 file = new File("." + File.separator + "screenshots" + File.separator + formatter.format(date) + ".png");
+            } else {
+                 file = new File("." + File.separator + "video2" + File.separator + filenamemode + ".png");
+            }
             file.getParentFile().mkdirs();
             RenderedImage renderedImage = SwingFXUtils.fromFXImage(canvas.snapshot(new SnapshotParameters(),new WritableImage(width,height)),null);
             ImageIO.write(renderedImage,"png",file);
@@ -183,12 +192,33 @@ public class Main extends Application {
         }
     }
 
-    private void generateVideo(int x, int y,int img_count){
-        for (int i=0; i<img_count; i++){
-            takeScreenshot();
-            mandleBrot.zoom(x,y,width,height,2);
-            mandleBrot.draw(canvas.getGraphicsContext2D(),width,height);
+    private void generateVideo(int x, int y,int img_count,double speed){
+        takeScreenshot(0);
+        //mandleBrot.zoom(x,y,width,height,speed);
+        mandleBrot.zoom(-1.3952110016851083,-0.018571491266314463,speed);
+        mandleBrot.draw(canvas.getGraphicsContext2D(),width,height);
+        while (mandleBrot.isMultithreading()) {
+            try {
+                wait(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
+        for (int i=1; i<img_count; i++){
+            takeScreenshot(i);
+            //mandleBrot.zoom(width/2,height/2,width,height,speed);
+            mandleBrot.zoom(-1.3952110016851083,-0.018571491266314463,speed);
+            mandleBrot.draw(canvas.getGraphicsContext2D(),width,height);
+            while (mandleBrot.isMultithreading()) {
+                try {
+                    wait(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        //commandline D:\Programme\ffmpeg-20190429-ac551c5-win64-static\bin\ffmpeg.exe -r 30 -f image2 -i %d.png -vcodec libx264 -crf 10 -pix_fmt yuv420p testhq.mp4
     }
 
 }

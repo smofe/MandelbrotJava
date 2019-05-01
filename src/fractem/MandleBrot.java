@@ -10,6 +10,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class MandleBrot {
 
@@ -22,6 +25,8 @@ public class MandleBrot {
     private Color color;
 
     private boolean multithreading = true;
+
+    private boolean generating = false;
 
     public MandleBrot(double r, double i, double width, double height){
         this.top_left = new ComplexNumber(r,i);
@@ -36,7 +41,7 @@ public class MandleBrot {
 
     public void draw(GraphicsContext gc,int width, int height){
         if (multithreading) {
-            Thread[][] threads = new Thread[8][8];
+            /*Thread[][] threads = new Thread[8][8];
             Runnable[][] runnables = new Runnable[threads.length][threads[0].length];
             double frac_width = (bottom_right.getReal()-top_left.getReal());
             double frac_height = (bottom_right.getImaginary()-top_left.getImaginary());
@@ -51,6 +56,23 @@ public class MandleBrot {
 
                     Platform.runLater(threads[x][y]);
                 }
+            } */
+            ExecutorService es = Executors.newCachedThreadPool();
+            double frac_width = (bottom_right.getReal()-top_left.getReal());
+            double frac_height = (bottom_right.getImaginary()-top_left.getImaginary());
+            int threads = 8;
+            for (int x=0; x<threads; x++){
+                for (int y=0; y<threads;y++) {
+                    es.execute(new DrawingThread(gc,new ComplexNumber(top_left.getReal()+frac_width*x/threads,top_left.getImaginary()+y*frac_height/threads),
+                            new ComplexNumber(top_left.getReal()+(x+1)*frac_width/threads, top_left.getImaginary()+(y+1)*frac_height/threads),
+                            x*width/threads,y*height/threads,width/threads,height/threads,max_iterations,color,smoothfactor));
+                }
+            }
+            es.shutdown();
+            try {
+                multithreading = !(es.awaitTermination(1, TimeUnit.MINUTES));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
 
 
@@ -112,6 +134,16 @@ public class MandleBrot {
         setTop_left(new_top_left);
     }
 
+    public void zoom(double real, double imaginary, double factor){
+        double r1 = (real-getTop_left().getReal());
+        double r2 = (getBottom_right().getReal()-real);
+        double i1 = (imaginary-getTop_left().getImaginary());
+        double i2 = (getBottom_right().getImaginary()-imaginary);
+        ComplexNumber new_top_left = new ComplexNumber(getTop_left().getReal()+r1/factor,getTop_left().getImaginary()+i1/factor);
+        setBottom_right(new ComplexNumber(getBottom_right().getReal()-r2/factor,getBottom_right().getImaginary()-i2/factor));
+        setTop_left(new_top_left);
+    }
+
     public ComplexNumber getTop_left() {
         return top_left;
     }
@@ -159,5 +191,9 @@ public class MandleBrot {
 
     public void setMultithreading(boolean multithreading) {
         this.multithreading = multithreading;
+    }
+
+    public boolean isGenerating() {
+        return generating;
     }
 }
