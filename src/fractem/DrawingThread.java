@@ -65,10 +65,10 @@ public class DrawingThread implements Runnable {
 
                     double hue = color.getHue() - smoothfactor[0]/100.0* smooth;
                     double sat = color.getSaturation() + smoothfactor[1]/100.0*smooth;
-                    while (sat > 1) sat-=1.0;
+                    while (sat > 1) sat-=1.5;
                     while (sat < 0) sat +=1.0;
                     double bright = color.getBrightness() + smoothfactor[2]/100.0*smooth;
-                    while (bright > 1) bright-=1.0;
+                    while (bright > 1) bright-=1.5;
                     while (bright < 0) bright +=1.0;
                     pw.setColor(col,row,Color.hsb(hue,sat,bright));
                 } else {

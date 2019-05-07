@@ -41,22 +41,6 @@ public class MandleBrot {
 
     public void draw(GraphicsContext gc,int width, int height){
         if (multithreading) {
-            /*Thread[][] threads = new Thread[8][8];
-            Runnable[][] runnables = new Runnable[threads.length][threads[0].length];
-            double frac_width = (bottom_right.getReal()-top_left.getReal());
-            double frac_height = (bottom_right.getImaginary()-top_left.getImaginary());
-            for (int x=0; x<threads.length; x++){
-                for (int y=0; y<threads[x].length;y++){
-                    runnables[x][y]=new DrawingThread(gc,new ComplexNumber(top_left.getReal()+frac_width*x/threads.length,top_left.getImaginary()+y*frac_height/threads[x].length),
-                            new ComplexNumber(top_left.getReal()+(x+1)*frac_width/threads.length, top_left.getImaginary()+(y+1)*frac_height/threads[x].length),
-                            x*width/threads.length,y*height/threads[x].length,width/threads.length,height/threads[x].length,max_iterations,color,smoothfactor);
-
-                    threads[x][y] = new Thread(runnables[x][y]);
-                    threads[x][y].start();
-
-                    Platform.runLater(threads[x][y]);
-                }
-            } */
             ExecutorService es = Executors.newCachedThreadPool();
             double frac_width = (bottom_right.getReal()-top_left.getReal());
             double frac_height = (bottom_right.getImaginary()-top_left.getImaginary());
@@ -70,66 +54,69 @@ public class MandleBrot {
             }
             es.shutdown();
             try {
-                multithreading = !(es.awaitTermination(1, TimeUnit.MINUTES));
+                generating = !(es.awaitTermination(1, TimeUnit.MINUTES));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
 
-        } else
-            {
-        WritableImage img = new WritableImage(width, height);
-        int iteration;
-
-
-        double pixelwidth_x = (bottom_right.getReal()-top_left.getReal())/width;
-        double pixelwidth_y = (bottom_right.getImaginary()-top_left.getImaginary())/height;
-        PixelWriter pw = img.getPixelWriter();
-
-        for (int row=0; row < height; row++){
-            for (int col=0; col < width; col++){
-                double c_re = top_left.getReal()+col*pixelwidth_x;
-                double c_im = top_left.getImaginary()+row*pixelwidth_y;
-                double x=0, y=0;
-                iteration = 0;
-
-                while (x*x+y*y < 4 && iteration < max_iterations){
-                    double x_new = x*x-y*y+c_re;
-                    y = 2*x*y+c_im;
-                    x = x_new;
-                    iteration++;
-                }
-
-                if (iteration < max_iterations) {
-                    double smooth = iteration + 1.0 - Math.log(Math.abs(x)+Math.abs(y))/Math.log(2.0);
-
-                    double hue = color.getHue() - smoothfactor[0]/100.0* smooth;
-                    double sat = color.getSaturation() + smoothfactor[1]/100.0*smooth;
-                    while (sat > 1) sat-=1.5;
-                    while (sat < 0) sat+=1;
-                    double bright = color.getBrightness() + smoothfactor[2]/100.0*smooth;
-                    while (bright > 1) bright-=1.5;
-                    while (bright < 0) bright+=1;
-                    pw.setColor(col,row,Color.hsb(hue,sat,bright));
-                } else {
-                    pw.setColor(col,row,Color.BLACK);
-                }
-            }
         }
+        else {
+            WritableImage img = new WritableImage(width, height);
+            int iteration;
 
-        gc.drawImage(img,0,0);
+            double pixelwidth_x = (bottom_right.getReal()-top_left.getReal())/width;
+            double pixelwidth_y = (bottom_right.getImaginary()-top_left.getImaginary())/height;
+            PixelWriter pw = img.getPixelWriter();
 
+            for (int row=0; row < height; row++){
+                for (int col=0; col < width; col++){
+                    double c_re = top_left.getReal()+col*pixelwidth_x;
+                    double c_im = top_left.getImaginary()+row*pixelwidth_y;
+                    double x=0, y=0;
+                    iteration = 0;
+
+                    while (x*x+y*y < 4 && iteration < max_iterations){
+                        double x_new = x*x-y*y+c_re;
+                        y = 2*x*y+c_im;
+                        x = x_new;
+                        iteration++;
+                    }
+
+                    if (iteration < max_iterations) {
+                        double smooth = iteration + 1.0 - Math.log(Math.abs(x)+Math.abs(y))/Math.log(2.0);
+
+                        double hue = color.getHue() - smoothfactor[0]/100.0* smooth;
+                        double sat = color.getSaturation() + smoothfactor[1]/100.0*smooth;
+                        while (sat > 1) sat-=1.5;
+                        while (sat < 0) sat+=1;
+                        double bright = color.getBrightness() + smoothfactor[2]/100.0*smooth;
+                        while (bright > 1) bright-=1.5;
+                        while (bright < 0) bright+=1;
+                        pw.setColor(col,row,Color.hsb(hue,sat,bright));
+                    } else {
+                        pw.setColor(col,row,Color.BLACK);
+                    }
+                }
             }
+            gc.drawImage(img,0,0);
+        }
 
     }
 
     public void zoom(int x_pos, int y_pos, int width, int height, double factor){
+        /* Coords of mouse click */
         double r = getTop_left().getReal()+((getBottom_right().getReal()-getTop_left().getReal())*x_pos)/width;
         double i = getTop_left().getImaginary()+((getBottom_right().getImaginary()-getTop_left().getImaginary())*y_pos)/height;
-        ComplexNumber new_top_left = new ComplexNumber(r-(getBottom_right().getReal()-getTop_left().getReal())/factor,
-                i-(getBottom_right().getImaginary()-getTop_left().getImaginary())/factor);
-        setBottom_right(new ComplexNumber(r+(getBottom_right().getReal()-getTop_left().getReal())/factor,
-                i+(getBottom_right().getImaginary()-getTop_left().getImaginary())/factor));
+        //System.out.println("Top_left: " + getTop_left().getReal()+","+getTop_left().getImaginary()+ " Bottom_Right: " +
+        //        getBottom_right().getReal()+","+getBottom_right().getImaginary() + " r: " + r + " ,i: " + i);
+        double width_real = getBottom_right().getReal()-getTop_left().getReal();
+        double height_imaginary = getBottom_right().getImaginary()-getTop_left().getImaginary();
+        System.out.println(width_real + ", " + height_imaginary);
+        ComplexNumber new_top_left = new ComplexNumber(r-(width_real)/(factor*2),
+                i-(height_imaginary)/(factor*2));
+        setBottom_right(new ComplexNumber(r+(width_real)/(factor*2),
+                i+(height_imaginary)/(factor*2)));
 
         setTop_left(new_top_left);
     }
