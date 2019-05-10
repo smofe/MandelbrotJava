@@ -175,10 +175,10 @@ public class Main extends Application {
         Text text_imaginarycoord = new Text("Imaginary Coord: ");
         Text text_zoomlevel = new Text("Zoomlevel: ");
         Text text_frames = new Text("Frames: ");
-        TextField textField_realcoord = new TextField("0");
-        TextField textField_imaginarycoord = new TextField("0");
-        TextField textField_zoomlevel = new TextField("10");
-        TextField textField_frames = new TextField("100");
+        TextField textField_realcoord = new TextField("-0.644577527046203");
+        TextField textField_imaginarycoord = new TextField("-0.44716966417100695");
+        TextField textField_zoomlevel = new TextField("4096");
+        TextField textField_frames = new TextField("16");
         Button btn_useCurrentCoords = new Button("Current Coords");
         btn_useCurrentCoords.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
@@ -257,8 +257,8 @@ public class Main extends Application {
                // generateVideo((int)event.getX(),(int)event.getY(),1500,50);
                mandleBrot.draw(canvas.getGraphicsContext2D(),width,height);
               // System.out.println("r: " + (mandleBrot.getTop_left().getReal()+mandleBrot.getBottom_right().getReal())/2 + " i: " + (mandleBrot.getTop_left().getImaginary()+mandleBrot.getBottom_right().getImaginary())/2);
-               center_r = mandleBrot.getTop_left().getReal()+mandleBrot.getBottom_right().getReal()/2;
-               center_i = mandleBrot.getTop_left().getImaginary()+mandleBrot.getBottom_right().getImaginary()/2;
+               center_r = mandleBrot.getTop_left().getReal() + (mandleBrot.getBottom_right().getReal() - mandleBrot.getTop_left().getReal())/2;
+               center_i = mandleBrot.getTop_left().getImaginary() + (mandleBrot.getBottom_right().getImaginary() - mandleBrot.getTop_left().getImaginary())/2;
                center_coord.setText("r: " + String.valueOf(center_r) + " , i: " + String.valueOf(center_i) );
             }
         });
@@ -313,7 +313,9 @@ public class Main extends Application {
         takeScreenshot(0);
         double speed = Math.pow(zoom,1.0/frames);
         System.out.println("Speed: " + speed);
-        mandleBrot.zoom(r,i,speed);
+        //mandleBrot.zoom(r,i,speed);
+        mandleBrot.zoom((int)width/2,(int)height/2,width,height,speed);
+
         mandleBrot.draw(canvas.getGraphicsContext2D(),width,height);
         while (mandleBrot.isGenerating()) {
             try {
@@ -324,7 +326,8 @@ public class Main extends Application {
         }
         for (int f=1; f<frames; f++){
             takeScreenshot(f);
-            mandleBrot.zoom(r,i,speed);
+            //mandleBrot.zoom(r,i,speed);
+            mandleBrot.zoom((int)width/2,(int)height/2,width,height,speed);
             mandleBrot.draw(canvas.getGraphicsContext2D(),width,height);
             while (mandleBrot.isGenerating()) {
                 try {
@@ -336,8 +339,8 @@ public class Main extends Application {
         }
 
         //commandline D:\Programme\ffmpeg-20190429-ac551c5-win64-static\bin\ffmpeg.exe -r 30 -f image2 -i %d.png -vcodec libx264 -crf 10 -pix_fmt yuv420p testhq.mp4
-        center_r = mandleBrot.getTop_left().getReal()+mandleBrot.getBottom_right().getReal()/2;
-        center_i = mandleBrot.getTop_left().getImaginary()+mandleBrot.getBottom_right().getImaginary()/2;
+        center_r = mandleBrot.getTop_left().getReal() + (mandleBrot.getBottom_right().getReal() - mandleBrot.getTop_left().getReal())/2;
+        center_i = mandleBrot.getTop_left().getImaginary() + (mandleBrot.getBottom_right().getImaginary() - mandleBrot.getTop_left().getImaginary())/2;
         System.out.println("Center: " + center_r + " ," + center_i);
     }
 

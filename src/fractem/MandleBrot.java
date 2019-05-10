@@ -24,7 +24,7 @@ public class MandleBrot {
 
     private Color color;
 
-    private boolean multithreading = true;
+    private boolean multithreading = false;
 
     private boolean generating = false;
 
@@ -122,6 +122,7 @@ public class MandleBrot {
     }
 
     public void zoom(double real, double imaginary, double factor){
+        factor *=2;
         double r1 = (real-getTop_left().getReal());
         double r2 = (getBottom_right().getReal()-real);
         double i1 = (imaginary-getTop_left().getImaginary());
@@ -129,6 +130,8 @@ public class MandleBrot {
         ComplexNumber new_top_left = new ComplexNumber(getTop_left().getReal()+r1/factor,getTop_left().getImaginary()+i1/factor);
         setBottom_right(new ComplexNumber(getBottom_right().getReal()-r2/factor,getBottom_right().getImaginary()-i2/factor));
         setTop_left(new_top_left);
+        System.out.println("left_r: " + getTop_left().getReal() + " | right_r: " + getBottom_right().getReal()  + " | center_r: " + getTop_left().getReal() + (getBottom_right().getReal() - getTop_left().getReal())/2);
+        System.out.println("left_i: " + getTop_left().getImaginary() + " | right_i: " + getBottom_right().getImaginary()  + " | center_i: " + getTop_left().getImaginary()+(getBottom_right().getImaginary() - getTop_left().getImaginary())/2);
     }
 
     public ComplexNumber getTop_left() {
