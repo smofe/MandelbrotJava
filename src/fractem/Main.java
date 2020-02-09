@@ -80,7 +80,7 @@ public class Main extends Application {
         CheckBox enableMultithreading = new CheckBox("Enable Multithreading");
         enableMultithreading.setSelected(true);
         ComboBox resolution = new ComboBox();
-        resolution.getItems().addAll("1920x1080","1080x720","896x504","768x432","640x360","512x288","384x216","256x144","128x72");
+        resolution.getItems().addAll("3840x2160","1920x1080","1080x720","896x504","768x432","640x360","512x288","384x216","256x144","128x72");
         resolution.setValue(String.valueOf(width)+"x"+String.valueOf(height));
         Text center_coord = new Text("r: " + String.valueOf(center_r) + " , i: " + String.valueOf(center_i) );
 
